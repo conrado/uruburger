@@ -1,7 +1,17 @@
-import { Controller, Get, Post, Body, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Param,
+  Delete,
+  Patch,
+  HttpCode,
+} from '@nestjs/common';
 import { MenuItemsService } from './menu-items.service';
 import { MenuItem } from '../../entities/menu-item.entity';
 import { CreateMenuItemDto } from '../../dto/create-menu-item.dto';
+import { UpdateMenuItemDto } from '../../dto/update-menu-item.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
 @ApiTags('menu-items')
@@ -51,6 +61,29 @@ export class MenuItemsController {
     return this.menuItemsService.create(createMenuItemDto);
   }
 
+  @ApiOperation({ summary: 'Update a menu item' })
+  @ApiParam({ name: 'id', description: 'Menu item ID to update' })
+  @ApiResponse({
+    status: 200,
+    description: 'The menu item has been successfully updated',
+    type: MenuItem,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Menu item not found',
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error',
+  })
+  @Patch(':id')
+  update(
+    @Param('id') id: string,
+    @Body() updateMenuItemDto: UpdateMenuItemDto,
+  ): Promise<MenuItem> {
+    return this.menuItemsService.update(+id, updateMenuItemDto);
+  }
+
   @ApiOperation({ summary: 'Delete a menu item' })
   @ApiParam({ name: 'id', description: 'Menu item ID to delete' })
   @ApiResponse({
@@ -62,6 +95,7 @@ export class MenuItemsController {
     description: 'Menu item not found',
   })
   @Delete(':id')
+  @HttpCode(200)
   remove(@Param('id') id: string): Promise<void> {
     return this.menuItemsService.remove(+id);
   }
