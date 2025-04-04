@@ -1,19 +1,12 @@
 import Image from 'next/image';
 import { RefreshButton } from './components/RefreshButton';
+import { ClockService } from '@/lib/api';
 
 // This is a server component that fetches data on the server for each request
 async function getServerTime() {
-  // Using relative URL assuming backend is proxied or on the same domain
-  // In development you might need to use the full URL: http://localhost:3001/clock
-  const res = await fetch('http://localhost:3001/clock', {
-    cache: 'no-store', // Ensures fresh data on every request
-  });
-
-  if (!res.ok) {
-    throw new Error('Failed to fetch server time');
-  }
-
-  return res.json();
+  // Using our ClockService to get the time
+  const clockService = new ClockService();
+  return clockService.getTime();
 }
 
 export default async function Home() {

@@ -1,25 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import Link from 'next/link';
-
-interface TimeData {
-  time: string;
-  timestamp: number;
-}
+import { ClockService, ClockResponse } from '@/lib/api';
 
 export default function ApiExample() {
-  const [timeData, setTimeData] = useState<TimeData | null>(null);
+  const [timeData, setTimeData] = useState<ClockResponse | null>(null);
   const [loading, setLoading] = useState(false);
 
   const fetchServerTime = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3001/clock');
-      if (!res.ok) {
-        throw new Error('Failed to fetch time');
-      }
-      const data = await res.json();
+      // Using our ClockService to get the time
+      const clockService = new ClockService();
+      const data = await clockService.getTime();
       setTimeData(data);
     } catch (error) {
       console.error('Error fetching server time:', error);
