@@ -7,6 +7,7 @@ import {
 } from 'typeorm';
 import { MenuItem } from './menu-item.entity';
 import { ApiProperty } from '@nestjs/swagger';
+import { OrderStatus } from './order-status.enum';
 
 @Entity()
 export class MenuOrder {
@@ -23,6 +24,14 @@ export class MenuOrder {
   })
   @Column()
   qrCodeLink: string;
+
+  @ApiProperty({
+    description: 'Customer identifier as a mnemonic',
+    example: 'Table42-John',
+    required: false,
+  })
+  @Column({ nullable: true })
+  customerId: string;
 
   @ApiProperty({
     description: 'Menu items included in this order',
@@ -44,7 +53,7 @@ export class MenuOrder {
     example: [
       {
         timestamp: '2025-04-03T14:30:45.123Z',
-        event: 'created',
+        event: OrderStatus.ORDER_CREATED,
         details: { employee: 'John' },
       },
     ],
@@ -52,7 +61,7 @@ export class MenuOrder {
   @Column('json')
   eventLog: Array<{
     timestamp: Date;
-    event: string;
+    event: OrderStatus;
     details: any;
   }>;
 }

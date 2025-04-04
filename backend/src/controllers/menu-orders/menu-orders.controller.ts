@@ -17,6 +17,9 @@ import {
   ApiParam,
   ApiBody,
 } from '@nestjs/swagger';
+import { AddItemsToOrderDto } from '../../dto/add-items-to-order.dto';
+import { CancelItemsFromOrderDto } from '../../dto/cancel-items-from-order.dto';
+import { OrderStatus } from '../../entities/order-status.enum';
 
 @ApiTags('menu-orders')
 @Controller('menu-orders')
@@ -60,9 +63,98 @@ export class MenuOrdersController {
     status: 400,
     description: 'Bad request - validation error',
   })
+  @ApiBody({
+    type: CreateMenuOrderDto,
+    examples: {
+      basicOrder: {
+        summary: 'Basic Order Example',
+        description: 'A basic order with multiple items and quantities',
+        value: {
+          qrCodeLink: 'https://qr.example.com/table42',
+          customerId: 'Table42-John',
+          items: [
+            { id: 1, quantity: 2 },
+            { id: 3, quantity: 1 },
+          ],
+          observation: 'No pickles on burger please',
+        },
+      },
+    },
+  })
   @Post()
   create(@Body() createMenuOrderDto: CreateMenuOrderDto): Promise<MenuOrder> {
     return this.menuOrdersService.create(createMenuOrderDto);
+  }
+
+  @ApiOperation({ summary: 'Add items to an existing order' })
+  @ApiParam({ name: 'id', description: 'Menu order ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Items have been successfully added to the order',
+    type: MenuOrder,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order or items not found',
+  })
+  @ApiBody({
+    type: AddItemsToOrderDto,
+    examples: {
+      addItems: {
+        summary: 'Add Items Example',
+        description:
+          'Adding multiple items with quantities to an existing order',
+        value: {
+          items: [
+            { id: 4, quantity: 1 },
+            { id: 7, quantity: 2 },
+          ],
+          observation: 'Extra ketchup with the fries',
+        },
+      },
+    },
+  })
+  @Post(':id/add-items')
+  addItems(
+    @Param('id') id: string,
+    @Body() addItemsDto: AddItemsToOrderDto,
+  ): Promise<MenuOrder> {
+    return this.menuOrdersService.addItemsToOrder(+id, addItemsDto);
+  }
+
+  @ApiOperation({ summary: 'Cancel items from an existing order' })
+  @ApiParam({ name: 'id', description: 'Menu order ID' })
+  @ApiResponse({
+    status: 200,
+    description: 'Items have been successfully cancelled from the order',
+    type: MenuOrder,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order or items not found',
+  })
+  @ApiBody({
+    type: CancelItemsFromOrderDto,
+    examples: {
+      cancelItems: {
+        summary: 'Cancel Items Example',
+        description: 'Cancelling items with specified quantities from an order',
+        value: {
+          items: [
+            { id: 1, quantity: 1 },
+            { id: 3, quantity: 1 },
+          ],
+          observation: 'Customer changed their mind about these items',
+        },
+      },
+    },
+  })
+  @Post(':id/cancel-items')
+  cancelItems(
+    @Param('id') id: string,
+    @Body() cancelItemsDto: CancelItemsFromOrderDto,
+  ): Promise<MenuOrder> {
+    return this.menuOrdersService.cancelItemsFromOrder(+id, cancelItemsDto);
   }
 
   @ApiOperation({ summary: 'Update order status' })
@@ -73,12 +165,17 @@ export class MenuOrdersController {
       properties: {
         status: {
           type: 'string',
-          example: 'completed',
+          example: OrderStatus.PREPARING,
           description: 'New status for the order',
+          enum: Object.values(OrderStatus),
         },
         details: {
           type: 'object',
-          example: { note: 'Customer requested extra sauce' },
+          example: {
+            note: 'Customer requested extra sauce',
+            estimatedTime: 15,
+            observation: 'Priority order for VIP customer',
+          },
           description: 'Additional details for the status update',
         },
       },
@@ -97,7 +194,7 @@ export class MenuOrdersController {
   @Patch(':id/status')
   updateStatus(
     @Param('id') id: string,
-    @Body() statusUpdate: { status: string; details?: any },
+    @Body() statusUpdate: { status: OrderStatus; details?: any },
   ): Promise<MenuOrder> {
     return this.menuOrdersService.updateOrderStatus(
       +id,

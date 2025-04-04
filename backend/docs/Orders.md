@@ -14,10 +14,16 @@ This document provides details about the menu order endpoints available in the U
 
 ## Order Status Events
 
-Orders maintain an event log that tracks status changes. Known status types include:
+Orders maintain an event log that tracks status changes. Available status types are defined in the `OrderStatus` enum:
 
 - `ORDER_CREATED`: Initial state when the order is created
+- `ITEMS_ADDED`: When new items are added to an existing order
+- `ITEMS_CANCELLED`: When items are cancelled from an order
 - `PREPARING`: Order is being prepared in the kitchen
+- `READY_FOR_PICKUP`: Order is ready to be picked up by server or customer
+- `DELIVERED`: Order has been delivered to the customer
+- `COMPLETED`: Order has been completed and paid for
+- `CANCELLED`: Order has been cancelled
 
 ## Data Models
 
@@ -27,6 +33,7 @@ Orders maintain an event log that tracks status changes. Known status types incl
 {
   id: number;
   qrCodeLink: string;
+  customerId: string;  // Customer identifier (e.g., "Table42-John")
   items: MenuItem[];
   total: number;
   eventLog: [
@@ -44,7 +51,14 @@ Orders maintain an event log that tracks status changes. Known status types incl
 ```typescript
 {
   qrCodeLink: string;
-  itemIds: number[];
+  customerId?: string;  // Optional customer identifier
+  items: [
+    {
+      id: number;
+      quantity: number;
+    }
+  ];
+  observation?: string;
 }
 ```
 
