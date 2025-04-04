@@ -41,7 +41,7 @@ export class MenuItem {
 
   @ApiProperty({
     description: 'URL to the menu item image',
-    example: 'https://images.example.com/cheeseburger.jpg',
+    example: 'https://placehold.co/600x400.png?text=Xis',
   })
   @Column()
   imageLink: string;

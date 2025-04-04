@@ -11,10 +11,11 @@ export interface ClockResponse {
 // Menu Item API responses
 export interface MenuItem {
   id: number;
+  qrCodeLink: string;
   name: string;
+  value: number; // Changed from price to value to match backend
   description: string;
-  price: number;
-  imageUrl?: string;
+  imageLink: string; // Changed from imageUrl to imageLink to match backend
 }
 
 export interface CreateMenuItemDto {
@@ -33,18 +34,28 @@ export interface UpdateMenuItemDto {
 
 // Menu Order API responses
 export enum OrderStatus {
-  PENDING = 'pending',
-  PREPARING = 'preparing',
-  READY = 'ready',
-  DELIVERED = 'delivered',
-  CANCELLED = 'cancelled',
+  ORDER_CREATED = 'ORDER_CREATED',
+  ITEMS_ADDED = 'ITEMS_ADDED',
+  ITEMS_CANCELLED = 'ITEMS_CANCELLED',
+  PREPARING = 'PREPARING',
+  READY_FOR_PICKUP = 'READY_FOR_PICKUP',
+  DELIVERED = 'DELIVERED',
+  COMPLETED = 'COMPLETED',
+  CANCELLED = 'CANCELLED',
 }
 
 export interface MenuOrder {
   id: number;
-  customerName: string;
+  qrCodeLink: string;
+  customerId: string;
   items: MenuItem[];
-  status: OrderStatus;
+  total: number;
+  status: OrderStatus; // Added status field
+  eventLog: Array<{
+    timestamp: Date;
+    event: OrderStatus;
+    details: any;
+  }>;
   createdAt: string;
   updatedAt: string;
 }
